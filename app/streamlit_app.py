@@ -1,4 +1,6 @@
 import streamlit as st
+import sys, os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from src.recommender import ContentRecommender
 
 st.set_page_config(page_title="CineMatch", page_icon="🎬", layout="wide")
