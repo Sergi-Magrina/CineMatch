@@ -1,4 +1,3 @@
-# src/recommender.py
 import re
 from difflib import get_close_matches
 from typing import List, Union, Optional
@@ -76,14 +75,14 @@ class ContentRecommender:
     def _prepare_df(self, df_in: pd.DataFrame) -> pd.DataFrame:
         df = df_in.copy()
 
-        # Clean titles
+        # clean titles
         df["clean_title"] = df["title"].map(move_trailing_article)
 
-        # Clean genres
+        # clean genres
         df["genres"] = df["genres"].replace("(no genres listed)", "")
         df["genres_clean"] = df["genres"].fillna("").str.replace("|", " ", regex=False)
 
-        # Softer title tokens for modeling (strip sequel noise)
+        # softer title tokens for modeling (strip sequel noise)
         df["title_for_model"] = (
             df["clean_title"]
               .str.replace(r"\d+", " ", regex=True)
@@ -94,10 +93,10 @@ class ContentRecommender:
               .str.strip()
         )
 
-        # Franchise key for exclusion/penalty
+        # franchise key for exclusion/penalty
         df["_fr_key"] = df["clean_title"].map(franchise_key)
 
-        # Title lookup
+        # title lookup
         self.title_to_idx = {normalize_title(t): i for i, t in enumerate(df["clean_title"].fillna(""))}
         return df.reset_index(drop=True)
 
@@ -108,7 +107,7 @@ class ContentRecommender:
         raw = pd.read_csv(path)
         self.df = self._prepare_df(raw)
 
-        # Vectorize genres (dominant signal)
+        # vectorizing genres (dominant signal)
         self.v_gen = TfidfVectorizer(token_pattern=r"(?u)\b\w+\b", lowercase=True)
         self.X_gen = self.v_gen.fit_transform(self.df["genres_clean"])
 
@@ -161,7 +160,7 @@ class ContentRecommender:
         i = self.title_to_idx[key]
         scores = self.cos_sim[i].copy()
 
-        # Handle same-franchise items
+        # handle same-franchise items
         cand_idx = np.arange(len(self.df))
         cand_idx = cand_idx[cand_idx != i]
 
